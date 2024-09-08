@@ -1,5 +1,8 @@
 syntax = "proto3";
 
+package dsfs;
+option go_package="github.com/mahaonan001/dsfs;solider";
+
 message InFile {
     bytes datas=1;
     string unionid=2;
