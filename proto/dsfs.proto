@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+message InFile {
+    bytes datas=1;
+    string unionid=2;
+}
+message Response{
+    int32 code=1;
+    repeated int32 machine=2;
+    repeated int32 numberMachine=3;
+}
+
+service eatHandler {
+    rpc FileHandler (InFile) returns (Response);
+}
