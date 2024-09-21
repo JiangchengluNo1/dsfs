@@ -25,16 +25,18 @@ func Clinet2Server() (*grpc.ClientConn, error) {
 
 func main() {
 	cli, err := Clinet2Server()
-	defer cli.Close()
+	defer func() {
+		err := cli.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
 	if err != nil {
 		panic("failed to create new grpc client")
 	}
 	Gctx, Gcancle = context.WithTimeout(context.Background(), time.Hour)
 	defer Gcancle()
 	c := solider.NewEatHandlerClient(cli)
-	if err != nil {
-		panic(err)
-	}
 	r, err := c.FileHandler(Gctx, &solider.InFile{Datas: []byte{12, 31, 45, 2}, Unionid: "mahaonan"})
 	if err != nil {
 		panic("failed to get response,err: " + err.Error())
