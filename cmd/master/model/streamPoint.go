@@ -17,7 +17,7 @@ type StreamPoint struct {
 	sync.Mutex
 
 	fileName   string
-	spiltNode  []nodeBelong //文件分割
+	spiltNode  []nodeBelong // 文件分割
 	fileOnNode []nodeServer // 节点分布
 }
 
@@ -40,7 +40,7 @@ var fsMap map[string]StreamPoint
 
 // FsComein 接收新的文件，初始化文件对应的StreamPoint
 func FsComein(fileName string) {
-	fsMap[fileName] = StreamPoint{fileName: fileName, fileOnNode: make([]nodeServer, 2)}
+	fsMap[fileName] = StreamPoint{fileName: fileName, spiltNode: make([]nodeBelong, 2), fileOnNode: make([]nodeServer, 2)}
 }
 
 func init() {
