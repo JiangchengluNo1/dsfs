@@ -19,7 +19,7 @@ type StreamPoint struct {
 
 var CountNumber NodeServer = -1
 
-func (s *StreamPoint) GetNumbersofNode() int {
+func (s *StreamPoint) NumberssofNode() int {
 	return s.numNode
 }
 
