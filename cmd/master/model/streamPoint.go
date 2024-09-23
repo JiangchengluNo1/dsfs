@@ -2,32 +2,42 @@ package nodeModel
 
 import "sync"
 
-type NodeServer int
+var countNumber nodeServer = -1
 
-type NodeBelong struct {
-	Node NodeServer
-	Path string
+type nodeServer int
+
+type nodeBelong struct {
+	node nodeServer
+	path string
 }
 
 type StreamPoint struct {
 	sync.Mutex
 
-	FileName  string
-	SpiltNode []NodeBelong
+	fileName  string
+	spiltNode []nodeBelong
 	numNode   int
 }
-
-var CountNumber NodeServer = -1
 
 func (s *StreamPoint) NumberssofNode() int {
 	return s.numNode
 }
 
-func (s *StreamPoint) GetNodeNumber() NodeServer {
+func (s *StreamPoint) GetNodeNumber() nodeServer {
 	s.Lock()
 	defer s.Unlock()
 	s.numNode++
-	CountNumber++
-	s.SpiltNode = append(s.SpiltNode, NodeBelong{CountNumber, s.FileName})
-	return CountNumber
+	countNumber++
+	s.spiltNode = append(s.spiltNode, nodeBelong{countNumber, s.fileName})
+	return countNumber
+}
+
+var fsMap map[string]StreamPoint
+
+func FsComein(fileName string) {
+	fsMap[fileName] = StreamPoint{fileName: fileName, numNode: 0}
+}
+
+func init() {
+	fsMap = make(map[string]StreamPoint, 10)
 }

@@ -26,6 +26,6 @@ func TestSlice(t *testing.T) {
 
 	ns.Sp()
 	ns.Sp()
-	time.Sleep(time.Hour * 1086)
+	time.Sleep(time.Hour)
 	fmt.Println(ns)
 }
