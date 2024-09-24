@@ -40,10 +40,7 @@ func (h *Hearting) ChangeNodeMessage(id string) error {
 
 // NodeComeOn 当一个node连接到master时，master会调用这个函数
 func (h *Hearting) NodeComeOn(req *pb.Signal) (*pb.Alive, error) {
-	h.Lock()
-	h.ChangeNodeMessage(req.Mechine)
-	h.Unlock()
-	return &pb.Alive{Oniline: 1}, nil
+	return &pb.Alive{Oniline: 1}, h.ChangeNodeMessage(req.Mechine)
 }
 
 // CheckNodeStatus 检查node的状态
