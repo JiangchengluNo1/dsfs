@@ -2,11 +2,14 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
+	"net"
 	"sync"
 	"time"
 
 	pb "github.com/mahaonan001/dsfs/proto"
+	"google.golang.org/grpc"
 )
 
 // maxWaiting 最大等待时间
@@ -64,5 +67,16 @@ func (h *Hearting) CheckNodeStatus() {
 }
 
 func main() {
-
+	master := &Hearting{OnlineNode: make(map[string]time.Time)}
+	go master.CheckNodeStatus()
+	lis, err := net.Listen("tcp", ":0987")
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	s := grpc.NewServer()
+	pb.RegisterHeartDanceServer(s, master)
+	fmt.Println("master is running at :0987....")
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
 }
