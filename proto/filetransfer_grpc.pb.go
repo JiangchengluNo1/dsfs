@@ -28,7 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type HeartDanceClient interface {
 	HeartDance(ctx context.Context, in *Signal, opts ...grpc.CallOption) (*Alive, error)
-	MasterWakeUp(ctx context.Context, in *Signal, opts ...grpc.CallOption) (*Alive, error)
+	MasterWakeUp(ctx context.Context, in *MWU, opts ...grpc.CallOption) (*Alive, error)
 }
 
 type heartDanceClient struct {
@@ -49,7 +49,7 @@ func (c *heartDanceClient) HeartDance(ctx context.Context, in *Signal, opts ...g
 	return out, nil
 }
 
-func (c *heartDanceClient) MasterWakeUp(ctx context.Context, in *Signal, opts ...grpc.CallOption) (*Alive, error) {
+func (c *heartDanceClient) MasterWakeUp(ctx context.Context, in *MWU, opts ...grpc.CallOption) (*Alive, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Alive)
 	err := c.cc.Invoke(ctx, HeartDance_MasterWakeUp_FullMethodName, in, out, cOpts...)
@@ -64,7 +64,7 @@ func (c *heartDanceClient) MasterWakeUp(ctx context.Context, in *Signal, opts ..
 // for forward compatibility.
 type HeartDanceServer interface {
 	HeartDance(context.Context, *Signal) (*Alive, error)
-	MasterWakeUp(context.Context, *Signal) (*Alive, error)
+	MasterWakeUp(context.Context, *MWU) (*Alive, error)
 	mustEmbedUnimplementedHeartDanceServer()
 }
 
@@ -78,7 +78,7 @@ type UnimplementedHeartDanceServer struct{}
 func (UnimplementedHeartDanceServer) HeartDance(context.Context, *Signal) (*Alive, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HeartDance not implemented")
 }
-func (UnimplementedHeartDanceServer) MasterWakeUp(context.Context, *Signal) (*Alive, error) {
+func (UnimplementedHeartDanceServer) MasterWakeUp(context.Context, *MWU) (*Alive, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MasterWakeUp not implemented")
 }
 func (UnimplementedHeartDanceServer) mustEmbedUnimplementedHeartDanceServer() {}
@@ -121,7 +121,7 @@ func _HeartDance_HeartDance_Handler(srv interface{}, ctx context.Context, dec fu
 }
 
 func _HeartDance_MasterWakeUp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Signal)
+	in := new(MWU)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func _HeartDance_MasterWakeUp_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: HeartDance_MasterWakeUp_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HeartDanceServer).MasterWakeUp(ctx, req.(*Signal))
+		return srv.(HeartDanceServer).MasterWakeUp(ctx, req.(*MWU))
 	}
 	return interceptor(ctx, in, info, handler)
 }

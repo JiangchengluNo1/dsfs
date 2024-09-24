@@ -6,7 +6,7 @@ package filetransfer;
 
 service HeartDance {
   rpc HeartDance(Signal) returns (Alive); 
-  rpc MasterWakeUp(Signal) returns (Alive);
+  rpc MasterWakeUp(MWU) returns (Alive);
 }
 
 message Signal {
