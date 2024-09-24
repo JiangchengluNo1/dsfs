@@ -19,141 +19,141 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	FileService_Upload_FullMethodName   = "/filetransfer.FileService/Upload"
-	FileService_Download_FullMethodName = "/filetransfer.FileService/Download"
+	HeartDance_HeartDance_FullMethodName   = "/filetransfer.HeartDance/HeartDance"
+	HeartDance_MasterWakeUp_FullMethodName = "/filetransfer.HeartDance/MasterWakeUp"
 )
 
-// FileServiceClient is the client API for FileService service.
+// HeartDanceClient is the client API for HeartDance service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type FileServiceClient interface {
-	// 客户端流式上传文件
-	Upload(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[FileChunk, UploadStatus], error)
-	// 服务端流式下载文件
-	Download(ctx context.Context, in *FileRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FileChunk], error)
+type HeartDanceClient interface {
+	HeartDance(ctx context.Context, in *Signal, opts ...grpc.CallOption) (*Alive, error)
+	MasterWakeUp(ctx context.Context, in *Signal, opts ...grpc.CallOption) (*Alive, error)
 }
 
-type fileServiceClient struct {
+type heartDanceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewFileServiceClient(cc grpc.ClientConnInterface) FileServiceClient {
-	return &fileServiceClient{cc}
+func NewHeartDanceClient(cc grpc.ClientConnInterface) HeartDanceClient {
+	return &heartDanceClient{cc}
 }
 
-func (c *fileServiceClient) Upload(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[FileChunk, UploadStatus], error) {
+func (c *heartDanceClient) HeartDance(ctx context.Context, in *Signal, opts ...grpc.CallOption) (*Alive, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &FileService_ServiceDesc.Streams[0], FileService_Upload_FullMethodName, cOpts...)
+	out := new(Alive)
+	err := c.cc.Invoke(ctx, HeartDance_HeartDance_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[FileChunk, UploadStatus]{ClientStream: stream}
-	return x, nil
+	return out, nil
 }
 
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type FileService_UploadClient = grpc.ClientStreamingClient[FileChunk, UploadStatus]
-
-func (c *fileServiceClient) Download(ctx context.Context, in *FileRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FileChunk], error) {
+func (c *heartDanceClient) MasterWakeUp(ctx context.Context, in *Signal, opts ...grpc.CallOption) (*Alive, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &FileService_ServiceDesc.Streams[1], FileService_Download_FullMethodName, cOpts...)
+	out := new(Alive)
+	err := c.cc.Invoke(ctx, HeartDance_MasterWakeUp_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[FileRequest, FileChunk]{ClientStream: stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
+	return out, nil
 }
 
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type FileService_DownloadClient = grpc.ServerStreamingClient[FileChunk]
-
-// FileServiceServer is the server API for FileService service.
-// All implementations must embed UnimplementedFileServiceServer
+// HeartDanceServer is the server API for HeartDance service.
+// All implementations must embed UnimplementedHeartDanceServer
 // for forward compatibility.
-type FileServiceServer interface {
-	// 客户端流式上传文件
-	Upload(grpc.ClientStreamingServer[FileChunk, UploadStatus]) error
-	// 服务端流式下载文件
-	Download(*FileRequest, grpc.ServerStreamingServer[FileChunk]) error
-	mustEmbedUnimplementedFileServiceServer()
+type HeartDanceServer interface {
+	HeartDance(context.Context, *Signal) (*Alive, error)
+	MasterWakeUp(context.Context, *Signal) (*Alive, error)
+	mustEmbedUnimplementedHeartDanceServer()
 }
 
-// UnimplementedFileServiceServer must be embedded to have
+// UnimplementedHeartDanceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedFileServiceServer struct{}
+type UnimplementedHeartDanceServer struct{}
 
-func (UnimplementedFileServiceServer) Upload(grpc.ClientStreamingServer[FileChunk, UploadStatus]) error {
-	return status.Errorf(codes.Unimplemented, "method Upload not implemented")
+func (UnimplementedHeartDanceServer) HeartDance(context.Context, *Signal) (*Alive, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method HeartDance not implemented")
 }
-func (UnimplementedFileServiceServer) Download(*FileRequest, grpc.ServerStreamingServer[FileChunk]) error {
-	return status.Errorf(codes.Unimplemented, "method Download not implemented")
+func (UnimplementedHeartDanceServer) MasterWakeUp(context.Context, *Signal) (*Alive, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MasterWakeUp not implemented")
 }
-func (UnimplementedFileServiceServer) mustEmbedUnimplementedFileServiceServer() {}
-func (UnimplementedFileServiceServer) testEmbeddedByValue()                     {}
+func (UnimplementedHeartDanceServer) mustEmbedUnimplementedHeartDanceServer() {}
+func (UnimplementedHeartDanceServer) testEmbeddedByValue()                    {}
 
-// UnsafeFileServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to FileServiceServer will
+// UnsafeHeartDanceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to HeartDanceServer will
 // result in compilation errors.
-type UnsafeFileServiceServer interface {
-	mustEmbedUnimplementedFileServiceServer()
+type UnsafeHeartDanceServer interface {
+	mustEmbedUnimplementedHeartDanceServer()
 }
 
-func RegisterFileServiceServer(s grpc.ServiceRegistrar, srv FileServiceServer) {
-	// If the following call pancis, it indicates UnimplementedFileServiceServer was
+func RegisterHeartDanceServer(s grpc.ServiceRegistrar, srv HeartDanceServer) {
+	// If the following call pancis, it indicates UnimplementedHeartDanceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&FileService_ServiceDesc, srv)
+	s.RegisterService(&HeartDance_ServiceDesc, srv)
 }
 
-func _FileService_Upload_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(FileServiceServer).Upload(&grpc.GenericServerStream[FileChunk, UploadStatus]{ServerStream: stream})
-}
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type FileService_UploadServer = grpc.ClientStreamingServer[FileChunk, UploadStatus]
-
-func _FileService_Download_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(FileRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _HeartDance_HeartDance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Signal)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(FileServiceServer).Download(m, &grpc.GenericServerStream[FileRequest, FileChunk]{ServerStream: stream})
+	if interceptor == nil {
+		return srv.(HeartDanceServer).HeartDance(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HeartDance_HeartDance_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HeartDanceServer).HeartDance(ctx, req.(*Signal))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type FileService_DownloadServer = grpc.ServerStreamingServer[FileChunk]
+func _HeartDance_MasterWakeUp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Signal)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HeartDanceServer).MasterWakeUp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HeartDance_MasterWakeUp_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HeartDanceServer).MasterWakeUp(ctx, req.(*Signal))
+	}
+	return interceptor(ctx, in, info, handler)
+}
 
-// FileService_ServiceDesc is the grpc.ServiceDesc for FileService service.
+// HeartDance_ServiceDesc is the grpc.ServiceDesc for HeartDance service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var FileService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "filetransfer.FileService",
-	HandlerType: (*FileServiceServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams: []grpc.StreamDesc{
+var HeartDance_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "filetransfer.HeartDance",
+	HandlerType: (*HeartDanceServer)(nil),
+	Methods: []grpc.MethodDesc{
 		{
-			StreamName:    "Upload",
-			Handler:       _FileService_Upload_Handler,
-			ClientStreams: true,
+			MethodName: "HeartDance",
+			Handler:    _HeartDance_HeartDance_Handler,
 		},
 		{
-			StreamName:    "Download",
-			Handler:       _FileService_Download_Handler,
-			ServerStreams: true,
+			MethodName: "MasterWakeUp",
+			Handler:    _HeartDance_MasterWakeUp_Handler,
 		},
 	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "filetransfer.proto",
 }

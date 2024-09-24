@@ -4,24 +4,20 @@ option go_package = "./;filetransfer";
 
 package filetransfer;
 
-service FileService {
-  // 客户端流式上传文件
-  rpc Upload(stream FileChunk) returns (UploadStatus);
-
-  // 服务端流式下载文件
-  rpc Download(FileRequest) returns (stream FileChunk);
+service HeartDance {
+  rpc HeartDance(Signal) returns (Alive); 
+  rpc MasterWakeUp(Signal) returns (Alive);
 }
 
-message FileChunk {
-  bytes content = 1;
-  int32 chunk_number = 2;
+message Signal {
+  string Mechine = 1;
 }
 
-message UploadStatus {
-  string message = 1;
-  bool success = 2;
+message MWU{
+  Signal sig = 1;
+  repeated string StreamHad = 2;
 }
 
-message FileRequest {
-  string file_name = 1;
+message Alive {
+  int32 Oniline = 1;
 }
