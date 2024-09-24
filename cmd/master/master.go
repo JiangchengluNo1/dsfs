@@ -9,14 +9,17 @@ import (
 	pb "github.com/mahaonan001/dsfs/proto"
 )
 
+// maxWaiting 最大等待时间
 const maxWaiting = 10 * time.Second
 
+// Hearting 心跳服务
 type Hearting struct {
 	OnlineNode map[string]time.Time
 	pb.UnimplementedHeartDanceServer
 	sync.Mutex
 }
 
+// ChangeNodeMessage 更改node的信息，超时返回错误
 func (h *Hearting) ChangeNodeMessage(id string) error {
 	st := time.Now()
 	for {
@@ -35,7 +38,7 @@ func (h *Hearting) ChangeNodeMessage(id string) error {
 	}
 }
 
-// 实现文件上传
+// NodeComeOn 当一个node连接到master时，master会调用这个函数
 func (h *Hearting) NodeComeOn(req *pb.Signal) (*pb.Alive, error) {
 	h.Lock()
 	h.ChangeNodeMessage(req.Mechine)
@@ -43,6 +46,7 @@ func (h *Hearting) NodeComeOn(req *pb.Signal) (*pb.Alive, error) {
 	return &pb.Alive{Oniline: 1}, nil
 }
 
+// CheckNodeStatus 检查node的状态
 func (h *Hearting) CheckNodeStatus() {
 	for {
 		time.Sleep(5 * time.Second)
