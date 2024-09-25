@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"net"
 	"sync"
@@ -49,30 +48,37 @@ func (h *Hearting) ChangeNodeMessage(id string) error {
 // NodeComeOn 当一个node连接到master时，master会调用这个函数
 func (s *server) HeartDance(ctx context.Context, req *pb.Signal) (*pb.Alive, error) {
 	log.Printf("node %s is online", req.Mechine)
-	return &pb.Alive{Oniline: 1}, master.ChangeNodeMessage(req.Mechine)
+	err := master.ChangeNodeMessage(req.Mechine)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.Alive{Oniline: 1}, nil
 }
 
 func (s *server) MasterWakeUp(ctx context.Context, req *pb.MWU) (*pb.Alive, error) {
 	log.Printf("master %s is online", req.Sig.Mechine)
-	return &pb.Alive{Oniline: 1}, master.ChangeNodeMessage(req.Sig.Mechine)
+	if err := master.ChangeNodeMessage(req.Sig.Mechine); err != nil {
+		return nil, err
+	}
+	return &pb.Alive{Oniline: 1}, nil
 }
 
 // CheckNodeStatus 检查node的状态
 func (h *Hearting) CheckNodeStatus() {
 	for {
 		time.Sleep(5 * time.Second)
-		t := time.Now()
-		for node, lastTime := range h.OnlineNode {
-			switch {
-			case h.TryLock():
-				if time.Since(lastTime) > maxWaiting {
-					delete(h.OnlineNode, node)
+
+		// wrong the range loop can't changed with time going
+		for {
+			h.Lock()
+			for k := range h.OnlineNode {
+				t := time.Now()
+				if t.Sub(h.OnlineNode[k]) > 10*time.Second {
+					delete(h.OnlineNode, k)
+					log.Printf("node %s is offline", k)
 				}
-				log.Printf("node %s is out of connection\f", node)
-				h.Unlock()
-			case time.Since(t) > maxWaiting:
-				log.Fatal("get mutex time out,please check the master")
 			}
+			h.Unlock()
 		}
 	}
 }
@@ -87,7 +93,7 @@ func main() {
 	s := grpc.NewServer()
 	pb.RegisterHeartDanceServer(s, &server{})
 	log.Println("gRPC server registered")
-	fmt.Println("master is running at :8080....")
+	log.Println("master is running at :8080....")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

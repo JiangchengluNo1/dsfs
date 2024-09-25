@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"time"
 
 	pb "github.com/mahaonan001/dsfs/proto"
 	"google.golang.org/grpc"
@@ -25,9 +26,12 @@ func main() {
 	nodeID := "node-1"
 
 	// 启动心跳发送
-	r, err := client.HeartDance(context, &pb.Signal{Mechine: nodeID})
-	if err != nil {
-		log.Println(err)
+	for {
+		r, err := client.HeartDance(context, &pb.Signal{Mechine: nodeID})
+		if err != nil {
+			log.Println(err)
+		}
+		log.Println(r.GetOniline())
+		time.Sleep(5 * time.Second)
 	}
-	log.Println(r.GetOniline())
 }
