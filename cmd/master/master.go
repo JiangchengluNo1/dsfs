@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net"
 	"sync"
@@ -33,7 +34,11 @@ func (h *Hearting) ChangeNodeMessage(id string) error {
 		switch {
 		case h.TryLock():
 			{
-				h.OnlineNode[id] = st
+				fl := len(h.OnlineNode)
+				h.OnlineNode[id] = time.Now()
+				if fl == len(h.OnlineNode)-1 {
+					log.Printf("%s is online......", id)
+				}
 				h.Unlock()
 				return nil
 			}
@@ -47,7 +52,7 @@ func (h *Hearting) ChangeNodeMessage(id string) error {
 
 // NodeComeOn 当一个node连接到master时，master会调用这个函数
 func (s *server) HeartDance(ctx context.Context, req *pb.Signal) (*pb.Alive, error) {
-	log.Printf("node %s is online", req.Mechine)
+	// log.Printf("node %s is online", req.Mechine)
 	err := master.ChangeNodeMessage(req.Mechine)
 	if err != nil {
 		return nil, err
@@ -56,7 +61,7 @@ func (s *server) HeartDance(ctx context.Context, req *pb.Signal) (*pb.Alive, err
 }
 
 func (s *server) MasterWakeUp(ctx context.Context, req *pb.MWU) (*pb.Alive, error) {
-	log.Printf("master %s is online", req.Sig.Mechine)
+
 	if err := master.ChangeNodeMessage(req.Sig.Mechine); err != nil {
 		return nil, err
 	}
@@ -85,15 +90,15 @@ func (h *Hearting) CheckNodeStatus() {
 
 func main() {
 	go master.CheckNodeStatus()
-	lis, err := net.Listen("tcp", ":8080")
+	lis, err := net.Listen("tcp", ":45678")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	log.Println("Listening on :8080")
+	fmt.Println("Listening on :8080")
 	s := grpc.NewServer()
 	pb.RegisterHeartDanceServer(s, &server{})
-	log.Println("gRPC server registered")
-	log.Println("master is running at :8080....")
+	fmt.Println("gRPC server registered")
+	fmt.Println("master is running at :45678")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

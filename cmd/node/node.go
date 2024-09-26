@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
 	pb "github.com/mahaonan001/dsfs/proto"
@@ -12,7 +13,7 @@ import (
 
 func main() {
 	// 设置与 Master 的 gRPC 连接
-	conn, err := grpc.NewClient("localhost:8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient("localhost:45678", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect to master: %v", err)
 	}
@@ -23,7 +24,7 @@ func main() {
 	context, cancle := context.WithCancel(context.Background())
 	defer cancle()
 	// 模拟的节点ID
-	nodeID := "node-1"
+	nodeID := Args()
 
 	// 启动心跳发送
 	for {
@@ -34,4 +35,13 @@ func main() {
 		log.Println(r.GetOniline())
 		time.Sleep(5 * time.Second)
 	}
+}
+
+func Args() string {
+	args := os.Args
+	if len(args) != 2 {
+		log.Println("Usage: ./node <nodeID>")
+		os.Exit(1)
+	}
+	return args[1]
 }
