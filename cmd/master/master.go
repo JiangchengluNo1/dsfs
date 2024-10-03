@@ -81,6 +81,14 @@ func (h *Hearting) CheckNodeStatus() {
 	}
 }
 
+// func (h *Hearting) TransportFile(ctx context.Context, fileIn *pb.FileContents) (*pb.ResponseFileUp, error) {
+// 	return nil, nil
+// }
+
+func TransportFile(grpc.BidiStreamingServer[pb.FileContents, pb.ResponseFileUp]) error {
+	return nil
+}
+
 func main() {
 	go master.CheckNodeStatus()
 	lis, err := net.Listen("tcp", ":45678")

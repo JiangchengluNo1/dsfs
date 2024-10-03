@@ -7,7 +7,7 @@ package filetransfer;
 service HeartDance {
   rpc HeartDance(Signal) returns (Alive); 
   rpc MasterWakeUp(MWU) returns (Alive);
-  rpc TransportFile(FileContents) returns (ResponseFileUp);
+  rpc TransportFile(stream FileContents) returns (stream ResponseFileUp);
 }
 
 message Signal {

@@ -30,7 +30,7 @@ const (
 type HeartDanceClient interface {
 	HeartDance(ctx context.Context, in *Signal, opts ...grpc.CallOption) (*Alive, error)
 	MasterWakeUp(ctx context.Context, in *MWU, opts ...grpc.CallOption) (*Alive, error)
-	TransportFile(ctx context.Context, in *FileContents, opts ...grpc.CallOption) (*ResponseFileUp, error)
+	TransportFile(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[FileContents, ResponseFileUp], error)
 }
 
 type heartDanceClient struct {
@@ -61,15 +61,18 @@ func (c *heartDanceClient) MasterWakeUp(ctx context.Context, in *MWU, opts ...gr
 	return out, nil
 }
 
-func (c *heartDanceClient) TransportFile(ctx context.Context, in *FileContents, opts ...grpc.CallOption) (*ResponseFileUp, error) {
+func (c *heartDanceClient) TransportFile(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[FileContents, ResponseFileUp], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ResponseFileUp)
-	err := c.cc.Invoke(ctx, HeartDance_TransportFile_FullMethodName, in, out, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &HeartDance_ServiceDesc.Streams[0], HeartDance_TransportFile_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &grpc.GenericClientStream[FileContents, ResponseFileUp]{ClientStream: stream}
+	return x, nil
 }
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type HeartDance_TransportFileClient = grpc.BidiStreamingClient[FileContents, ResponseFileUp]
 
 // HeartDanceServer is the server API for HeartDance service.
 // All implementations must embed UnimplementedHeartDanceServer
@@ -77,7 +80,7 @@ func (c *heartDanceClient) TransportFile(ctx context.Context, in *FileContents, 
 type HeartDanceServer interface {
 	HeartDance(context.Context, *Signal) (*Alive, error)
 	MasterWakeUp(context.Context, *MWU) (*Alive, error)
-	TransportFile(context.Context, *FileContents) (*ResponseFileUp, error)
+	TransportFile(grpc.BidiStreamingServer[FileContents, ResponseFileUp]) error
 	mustEmbedUnimplementedHeartDanceServer()
 }
 
@@ -94,8 +97,8 @@ func (UnimplementedHeartDanceServer) HeartDance(context.Context, *Signal) (*Aliv
 func (UnimplementedHeartDanceServer) MasterWakeUp(context.Context, *MWU) (*Alive, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MasterWakeUp not implemented")
 }
-func (UnimplementedHeartDanceServer) TransportFile(context.Context, *FileContents) (*ResponseFileUp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TransportFile not implemented")
+func (UnimplementedHeartDanceServer) TransportFile(grpc.BidiStreamingServer[FileContents, ResponseFileUp]) error {
+	return status.Errorf(codes.Unimplemented, "method TransportFile not implemented")
 }
 func (UnimplementedHeartDanceServer) mustEmbedUnimplementedHeartDanceServer() {}
 func (UnimplementedHeartDanceServer) testEmbeddedByValue()                    {}
@@ -154,23 +157,12 @@ func _HeartDance_MasterWakeUp_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HeartDance_TransportFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(FileContents)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(HeartDanceServer).TransportFile(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: HeartDance_TransportFile_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HeartDanceServer).TransportFile(ctx, req.(*FileContents))
-	}
-	return interceptor(ctx, in, info, handler)
+func _HeartDance_TransportFile_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(HeartDanceServer).TransportFile(&grpc.GenericServerStream[FileContents, ResponseFileUp]{ServerStream: stream})
 }
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type HeartDance_TransportFileServer = grpc.BidiStreamingServer[FileContents, ResponseFileUp]
 
 // HeartDance_ServiceDesc is the grpc.ServiceDesc for HeartDance service.
 // It's only intended for direct use with grpc.RegisterService,
@@ -187,11 +179,14 @@ var HeartDance_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "MasterWakeUp",
 			Handler:    _HeartDance_MasterWakeUp_Handler,
 		},
+	},
+	Streams: []grpc.StreamDesc{
 		{
-			MethodName: "TransportFile",
-			Handler:    _HeartDance_TransportFile_Handler,
+			StreamName:    "TransportFile",
+			Handler:       _HeartDance_TransportFile_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
 	Metadata: "proto/filetransfer.proto",
 }
