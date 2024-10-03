@@ -22,7 +22,7 @@ func main() {
 	defer conn.Close()
 
 	// 创建 HeartDance 客户端
-	client := pb.NewHeartDanceClient(conn)
+	client := pb.NewMasterServerClient(conn)
 	context, cancle := context.WithCancel(context.Background())
 	defer cancle()
 	// 模拟的节点ID

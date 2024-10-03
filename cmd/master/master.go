@@ -18,7 +18,7 @@ const maxWaiting = 10 * time.Second
 
 type Hearting struct {
 	OnlineNode map[string]time.Time
-	pb.UnimplementedHeartDanceServer
+	pb.UnimplementedMasterServerServer
 	sync.Mutex
 }
 
@@ -81,14 +81,6 @@ func (h *Hearting) CheckNodeStatus() {
 	}
 }
 
-// func (h *Hearting) TransportFile(ctx context.Context, fileIn *pb.FileContents) (*pb.ResponseFileUp, error) {
-// 	return nil, nil
-// }
-
-func TransportFile(grpc.BidiStreamingServer[pb.FileContents, pb.ResponseFileUp]) error {
-	return nil
-}
-
 func main() {
 	go master.CheckNodeStatus()
 	lis, err := net.Listen("tcp", ":45678")
@@ -96,7 +88,7 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	pb.RegisterHeartDanceServer(s, &Hearting{})
+	pb.RegisterMasterServerServer(s, &Hearting{})
 	fmt.Println("master is running at :45678")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
