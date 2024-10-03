@@ -16,12 +16,9 @@ import (
 // maxWaiting 最大等待时间
 const maxWaiting = 10 * time.Second
 
-type server struct {
-	pb.UnimplementedHeartDanceServer
-}
-
 type Hearting struct {
 	OnlineNode map[string]time.Time
+	pb.UnimplementedHeartDanceServer
 	sync.Mutex
 }
 
@@ -51,7 +48,7 @@ func (h *Hearting) ChangeNodeMessage(id string) error {
 }
 
 // NodeComeOn 当一个node连接到master时，master会调用这个函数
-func (s *server) HeartDance(ctx context.Context, req *pb.Signal) (*pb.Alive, error) {
+func (h *Hearting) HeartDance(ctx context.Context, req *pb.Signal) (*pb.Alive, error) {
 	// log.Printf("node %s is online", req.Mechine)
 	err := master.ChangeNodeMessage(req.Mechine)
 	if err != nil {
@@ -60,7 +57,7 @@ func (s *server) HeartDance(ctx context.Context, req *pb.Signal) (*pb.Alive, err
 	return &pb.Alive{Oniline: 1}, nil
 }
 
-func (s *server) MasterWakeUp(ctx context.Context, req *pb.MWU) (*pb.Alive, error) {
+func (h *Hearting) MasterWakeUp(ctx context.Context, req *pb.MWU) (*pb.Alive, error) {
 
 	if err := master.ChangeNodeMessage(req.Sig.Mechine); err != nil {
 		return nil, err
@@ -72,19 +69,15 @@ func (s *server) MasterWakeUp(ctx context.Context, req *pb.MWU) (*pb.Alive, erro
 func (h *Hearting) CheckNodeStatus() {
 	for {
 		time.Sleep(5 * time.Second)
-
-		// wrong the range loop can't changed with time going
-		for {
-			h.Lock()
-			for k := range h.OnlineNode {
-				t := time.Now()
-				if t.Sub(h.OnlineNode[k]) > 10*time.Second {
-					delete(h.OnlineNode, k)
-					log.Printf("node %s is offline", k)
-				}
+		h.Lock()
+		for k := range h.OnlineNode {
+			t := time.Now()
+			if t.Sub(h.OnlineNode[k]) > 10*time.Second {
+				delete(h.OnlineNode, k)
+				log.Printf("node %s is offline", k)
 			}
-			h.Unlock()
 		}
+		h.Unlock()
 	}
 }
 
@@ -94,10 +87,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	fmt.Println("Listening on :8080")
 	s := grpc.NewServer()
-	pb.RegisterHeartDanceServer(s, &server{})
-	fmt.Println("gRPC server registered")
+	pb.RegisterHeartDanceServer(s, &Hearting{})
 	fmt.Println("master is running at :45678")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)

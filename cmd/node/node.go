@@ -11,6 +11,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+var MasterOnline = false
+
 func main() {
 	// 设置与 Master 的 gRPC 连接
 	conn, err := grpc.NewClient("localhost:45678", grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -32,7 +34,7 @@ func main() {
 		if err != nil {
 			log.Println(err)
 		}
-		log.Println(r.GetOniline())
+		MasterOnline = (r.GetOniline() == 1)
 		time.Sleep(5 * time.Second)
 	}
 }
