@@ -7,6 +7,7 @@ package filetransfer;
 service HeartDance {
   rpc HeartDance(Signal) returns (Alive); 
   rpc MasterWakeUp(MWU) returns (Alive);
+  rpc TransportFile(FileContents) returns (ResponseFileUp);
 }
 
 message Signal {
@@ -20,4 +21,15 @@ message MWU{
 
 message Alive {
   int32 Oniline = 1;
+}
+
+message FileContents{
+  string name = 1;
+  repeated bytes content = 2;
+  string fileMeta = 3;
+}
+
+message ResponseFileUp{
+  repeated int32 nodes = 1;
+  repeated string nodeMeta = 2;
 }

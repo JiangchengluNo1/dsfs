@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.28.0
-// source: filetransfer.proto
+// source: proto/filetransfer.proto
 
 package filetransfer
 
@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	HeartDance_HeartDance_FullMethodName   = "/filetransfer.HeartDance/HeartDance"
-	HeartDance_MasterWakeUp_FullMethodName = "/filetransfer.HeartDance/MasterWakeUp"
+	HeartDance_HeartDance_FullMethodName    = "/filetransfer.HeartDance/HeartDance"
+	HeartDance_MasterWakeUp_FullMethodName  = "/filetransfer.HeartDance/MasterWakeUp"
+	HeartDance_TransportFile_FullMethodName = "/filetransfer.HeartDance/TransportFile"
 )
 
 // HeartDanceClient is the client API for HeartDance service.
@@ -29,6 +30,7 @@ const (
 type HeartDanceClient interface {
 	HeartDance(ctx context.Context, in *Signal, opts ...grpc.CallOption) (*Alive, error)
 	MasterWakeUp(ctx context.Context, in *MWU, opts ...grpc.CallOption) (*Alive, error)
+	TransportFile(ctx context.Context, in *FileContents, opts ...grpc.CallOption) (*ResponseFileUp, error)
 }
 
 type heartDanceClient struct {
@@ -59,12 +61,23 @@ func (c *heartDanceClient) MasterWakeUp(ctx context.Context, in *MWU, opts ...gr
 	return out, nil
 }
 
+func (c *heartDanceClient) TransportFile(ctx context.Context, in *FileContents, opts ...grpc.CallOption) (*ResponseFileUp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ResponseFileUp)
+	err := c.cc.Invoke(ctx, HeartDance_TransportFile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // HeartDanceServer is the server API for HeartDance service.
 // All implementations must embed UnimplementedHeartDanceServer
 // for forward compatibility.
 type HeartDanceServer interface {
 	HeartDance(context.Context, *Signal) (*Alive, error)
 	MasterWakeUp(context.Context, *MWU) (*Alive, error)
+	TransportFile(context.Context, *FileContents) (*ResponseFileUp, error)
 	mustEmbedUnimplementedHeartDanceServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedHeartDanceServer) HeartDance(context.Context, *Signal) (*Aliv
 }
 func (UnimplementedHeartDanceServer) MasterWakeUp(context.Context, *MWU) (*Alive, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MasterWakeUp not implemented")
+}
+func (UnimplementedHeartDanceServer) TransportFile(context.Context, *FileContents) (*ResponseFileUp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TransportFile not implemented")
 }
 func (UnimplementedHeartDanceServer) mustEmbedUnimplementedHeartDanceServer() {}
 func (UnimplementedHeartDanceServer) testEmbeddedByValue()                    {}
@@ -138,6 +154,24 @@ func _HeartDance_MasterWakeUp_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HeartDance_TransportFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FileContents)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HeartDanceServer).TransportFile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HeartDance_TransportFile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HeartDanceServer).TransportFile(ctx, req.(*FileContents))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // HeartDance_ServiceDesc is the grpc.ServiceDesc for HeartDance service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -153,7 +187,11 @@ var HeartDance_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "MasterWakeUp",
 			Handler:    _HeartDance_MasterWakeUp_Handler,
 		},
+		{
+			MethodName: "TransportFile",
+			Handler:    _HeartDance_TransportFile_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "filetransfer.proto",
+	Metadata: "proto/filetransfer.proto",
 }
