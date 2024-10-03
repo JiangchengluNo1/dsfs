@@ -57,14 +57,6 @@ func (h *Hearting) HeartDance(ctx context.Context, req *pb.Signal) (*pb.Alive, e
 	return &pb.Alive{Oniline: 1}, nil
 }
 
-func (h *Hearting) MasterWakeUp(ctx context.Context, req *pb.MWU) (*pb.Alive, error) {
-
-	if err := master.ChangeNodeMessage(req.Sig.Mechine); err != nil {
-		return nil, err
-	}
-	return &pb.Alive{Oniline: 1}, nil
-}
-
 // CheckNodeStatus 检查node的状态
 func (h *Hearting) CheckNodeStatus() {
 	for {
