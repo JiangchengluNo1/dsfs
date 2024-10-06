@@ -36,13 +36,9 @@ func (s *StreamPoint) AddNode() nodeServer {
 	return countNumber
 }
 
-var fsMap map[string]StreamPoint
+type FsMap map[string]StreamPoint
 
 // FsComein 接收新的文件，初始化文件对应的StreamPoint
-func FsComein(fileName string) {
-	fsMap[fileName] = StreamPoint{fileName: fileName, spiltNode: make([]nodeBelong, 2), fileOnNode: make([]nodeServer, 2)}
-}
-
-func init() {
-	fsMap = make(map[string]StreamPoint, 10)
+func (f FsMap) FsComein(fileName string) {
+	f[fileName] = StreamPoint{fileName: fileName, spiltNode: make([]nodeBelong, 2), fileOnNode: make([]nodeServer, 2)}
 }
