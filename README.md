@@ -6,6 +6,7 @@ spfs is a file system based on gfs
 ## How to Use
 ### init
 ```
+make init
 make build
 ```
 ### master
@@ -15,6 +16,10 @@ make master
 ### node
 ```
 make node
+```
+### clean
+```
+make clean
 ```
 #### if you wanna use the api,the protobuf is here
 [protobuf](https://github.com/mahaonan001/dsfs/blob/main/proto/filetransfer.proto)

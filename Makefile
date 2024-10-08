@@ -5,7 +5,7 @@ master_build:
 	go build -o ./bin/master ./cmd/master/master.go
 node_build:
 	go build -o ./bin/node ./cmd/node/node.go
-build: init pro master_build node_build 
+build: pro master_build node_build 
 
 master:
 	./bin/master
@@ -17,3 +17,4 @@ pro:
 
 clean:
 	rm -rf ./bin/*
+	rm -rf ./proto/*.pb.go
