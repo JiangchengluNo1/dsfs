@@ -1,8 +1,11 @@
+init:
+	go mod init github.com/mahaonan001/dsfs
+	go mod tidy
 master_build:
 	go build -o ./bin/master ./cmd/master/master.go
 node_build:
 	go build -o ./bin/node ./cmd/node/node.go
-build: master_build node_build
+build: init pro master_build node_build 
 
 master:
 	./bin/master
