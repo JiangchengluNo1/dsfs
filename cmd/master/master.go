@@ -32,13 +32,26 @@ type Master struct {
 
 // GetFile implements filetransfer.MasterServerServer.
 // Subtle: this method shadows the method (UnimplementedMasterServerServer).GetFile of Master.UnimplementedMasterServerServer.
-func (m *Master) GetFile(context.Context, *pb.File2Get) (*pb.FileGetRes, error) {
-	panic("unimplemented")
+func (m *Master) GetFile(ctx context.Context, f2g *pb.File2Get) (*pb.FileGetRes, error) {
+	filename := f2g.GetName()
+	m.FsMap.RLock()
+	defer m.FsMap.RUnlock()
+	sp := m.FsMap.FsMap[filename].SpiltNode
+	var res []*pb.SplitedMeta
+	for i := range sp {
+		res = append(res, &pb.SplitedMeta{Nodeserver: int32(sp[i].Node), Path: sp[i].Path})
+	}
+	return &pb.FileGetRes{Meta: res}, nil
+
 }
 
 // HeartDance implements filetransfer.MasterServerServer.
-func (m *Master) HeartDance(context.Context, *pb.Signal) (*pb.Alive, error) {
-	panic("unimplemented")
+func (m *Master) HeartDance(ctx context.Context, sig *pb.Signal) (*pb.Alive, error) {
+	err := master.ChangeOnlineTime(sig.Mechine)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.Alive{Oniline: 1}, nil
 }
 
 // MasterWakeUp implements filetransfer.MasterServerServer.
@@ -62,7 +75,7 @@ func (m *Master) UploadFile(context.Context, *pb.File2Up) (*pb.FileUpRes, error)
 var master = &Master{Heart: Heart{NodeOnline: make(map[string]time.Time)}}
 
 // ChangeNodeMessage 更改node的信息，超时返回错误
-func (h *Heart) ChangeNodeMessage(id string) error {
+func (h *Heart) ChangeOnlineTime(id string) error {
 	st := time.Now()
 	for {
 		switch {
@@ -82,15 +95,6 @@ func (h *Heart) ChangeNodeMessage(id string) error {
 			}
 		}
 	}
-}
-
-// NodeComeOn 当一个node连接到master时，master会调用这个函数
-func (h *Heart) HeartDance(ctx context.Context, req *pb.Signal) (*pb.Alive, error) {
-	err := master.ChangeNodeMessage(req.Mechine)
-	if err != nil {
-		return nil, err
-	}
-	return &pb.Alive{Oniline: 1}, nil
 }
 
 // CheckNodeStatus 检查node的状态

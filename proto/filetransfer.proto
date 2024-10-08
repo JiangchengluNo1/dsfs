@@ -49,8 +49,13 @@ message File2Get{
   string unionStr = 2;
 }
 
+message SplitedMeta{
+  int32 nodeserver =1;
+  string path =2;
+}
+
 message FileGetRes{
-  bytes contents = 1;
+  repeated SplitedMeta meta = 1;
 }
 
 message SpiltedFile{
