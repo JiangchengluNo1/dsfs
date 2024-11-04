@@ -4,66 +4,43 @@ option go_package = "./;filetransfer";
 
 package filetransfer;
 
-service MasterServer {
-  rpc HeartDance(Signal) returns (Alive); 
-  rpc MasterWakeUp(MWU) returns (Alive);
-  //
-  rpc UploadFile(File2Up) returns (FileUpRes);
-  rpc GetFile(File2Get) returns (FileGetRes);
+service FileTransfer {
+  rpc GetFile(GetFileRequest) returns (stream FileChunk) {}
+  rpc UploadFile(stream UploadFileRequest) returns (UploadFileResponse) {}
+  rpc DeleteFile(DeleteFileRequest) returns (DeleteFileResponse) {}
 }
 
-service NodeServer{
-  rpc TransportFile(stream SpiltedFile) returns (SplitedFileRes);
-  rpc GetFileFromNode(File2Get) returns(FileGetRes);
 
-
-  // rpc WakeUp() returns ();
+message GetFileRequest {
+  string path = 1;
+}
+// const filechunksize = 64mb
+message FileChunk {
+  bytes data = 1;
+  string md5=2;
 }
 
-message Signal {
-  string Mechine = 1;
+message FileMeta{
+  int64 index = 1;
+  string path = 2;
 }
 
-message MWU{
-  Signal sig = 1;
-  repeated string StreamHad = 2;
+message UploadFileRequest {
+  oneof payload {
+    FileMeta fm = 1;
+    bytes data = 2;
+  }
+  
 }
 
-message Alive {
-  int32 Oniline = 1;
+message UploadFileResponse {
+  bool success = 1;
 }
 
-message File2Up{
-  string name = 1;
-  int32 fileSize = 2;
-  bytes content = 3;
+message DeleteFileRequest {
+  string path = 1;
 }
 
-message FileUpRes{
-  int32 code = 1;
-  string msg = 2;
-}
-
-message File2Get{
-  string name = 1;
-  string unionStr = 2;
-}
-
-message SplitedMeta{
-  int32 nodeserver =1;
-  string path =2;
-}
-
-message FileGetRes{
-  repeated SplitedMeta meta = 1;
-}
-
-message SpiltedFile{
-  string fileName = 1;
-  string unionStr = 2;
-  bytes contents = 4;
-}
-
-message SplitedFileRes{
-  optional int32 status = 1;
+message DeleteFileResponse {
+  bool success = 1;
 }
