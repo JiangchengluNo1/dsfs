@@ -26,18 +26,31 @@ type Node struct {
 
 // *filetransfer.GetFileRequest, grpc.ServerStreamingServer[filetransfer.FileChunk]
 func (n *Node) GetFile(req *filetransfer.GetFileRequest, stream grpc.ServerStreamingServer[filetransfer.FileChunk]) error {
-	// for _, v := range req.GetFp() {
-	// 	if v.Address == Address {
-	// 		data, err := logic.GetFile(fileDir + "/" + v.Path)
-	// 		index, ok := logic.IndexHolder.Get(v.Path)
-	// 		if !ok {
-	// 			return nil, err
-	// 		}
-	// 		return &filetransfer.FileChunk{: data, Index: index}, nil
-	// 	}
-	// }
-	return nil
-
+	var (
+		err  error
+		file *os.File
+		ln   int
+	)
+	file, err = logic.GetFile(req.Path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	data := make([]byte, 1024*1024*64)
+	for {
+		ln, err = file.Read(data)
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		err = stream.Send(&filetransfer.FileChunk{Data: data[:ln]})
+		if err != nil {
+			break
+		}
+	}
+	return err
 }
 
 func (n *Node) UploadFile(stream filetransfer.FileTransfer_UploadFileServer) error {

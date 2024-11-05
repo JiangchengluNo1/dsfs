@@ -17,7 +17,6 @@ message GetFileRequest {
 // const filechunksize = 64mb
 message FileChunk {
   bytes data = 1;
-  string md5=2;
 }
 
 message FileMeta{

@@ -14,7 +14,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	s := grpc.NewServer()
+	s := grpc.NewServer(grpc.MaxSendMsgSize(1024*1024*128), grpc.MaxRecvMsgSize(1024*1024*128))
 	filetransfer.RegisterFileTransferServer(s, &node.Node{})
 	fmt.Println("Node start at 5001")
 	err = s.Serve(lis)
