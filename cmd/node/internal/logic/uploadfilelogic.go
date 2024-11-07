@@ -6,26 +6,25 @@ import (
 	"os"
 )
 
-const fileDir = "./file"
+const (
+	fileDir = "./file"
+)
 
-func OpenOrCreateFile(path string) (*os.File, error) {
-	fmt.Println("receive file path:", path)
-	file, err := os.OpenFile(fileDir+"/"+path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+func WriteData(sha [32]byte, data []byte) ([32]byte, error) {
+	shaPath := fmt.Sprintf("%x", sha)
+	file, err := os.OpenFile(fileDir+"/"+shaPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		return nil, err
+		return [32]byte{}, err
 	}
-	return file, nil
-}
-
-func WriteData(file *os.File, data []byte) error {
+	defer file.Close()
 	n, err := file.Write(data)
 	if err != nil {
-		return err
+		return [32]byte{}, err
 	}
 	if n != len(data) {
-		return os.ErrDeadlineExceeded
+		return [32]byte{}, os.ErrDeadlineExceeded
 	}
-	return nil
+	return [32]byte{}, nil
 }
 
 func GenerateSHA256(data []byte) [32]byte {
@@ -35,5 +34,8 @@ func GenerateSHA256(data []byte) [32]byte {
 
 func CheckSumExisted(sum [32]byte) bool {
 	// check if the file with the same checksum exists
+	if _, err := os.Stat(fileDir + "/" + fmt.Sprintf("%x", sum)); err == nil {
+		return true
+	}
 	return false
 }

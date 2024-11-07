@@ -30,7 +30,7 @@ func TestUpload(t *testing.T) {
 
 	client := filetransfer.NewFileTransferClient(conn)
 
-	file, err := os.Open("./file/test.meta")
+	file, err := os.Open("./file/mmbert.zip")
 	if err != nil {
 		log.Fatalf("could not open file: %v", err)
 	}

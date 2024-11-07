@@ -2,11 +2,13 @@ package node
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"os"
 
 	"github.com/mahaonan001/dsfs/cmd/node/internal/logic"
+	"github.com/mahaonan001/dsfs/cmd/node/tys"
 	filetransfer "github.com/mahaonan001/dsfs/proto"
 	"google.golang.org/grpc"
 )
@@ -36,7 +38,7 @@ func (n *Node) GetFile(req *filetransfer.GetFileRequest, stream grpc.ServerStrea
 		return err
 	}
 	defer file.Close()
-	data := make([]byte, 1024*1024*64)
+	data := make([]byte, tys.MB*64)
 	for {
 		ln, err = file.Read(data)
 		if err == io.EOF {
@@ -54,7 +56,6 @@ func (n *Node) GetFile(req *filetransfer.GetFileRequest, stream grpc.ServerStrea
 }
 
 func (n *Node) UploadFile(stream filetransfer.FileTransfer_UploadFileServer) error {
-	var file *os.File
 	for {
 		streamData, err := stream.Recv()
 		if err == io.EOF {
@@ -69,22 +70,19 @@ func (n *Node) UploadFile(stream filetransfer.FileTransfer_UploadFileServer) err
 		case *filetransfer.UploadFileRequest_Fm:
 			fc := streamData.GetFm()
 			path = fc.Path
-			file, err = logic.OpenOrCreateFile(path)
-			if err != nil {
-				return err
-			}
-			defer file.Close()
 		case *filetransfer.UploadFileRequest_Data:
 			data := streamData.GetData()
 			sum := logic.GenerateSHA256(data)
 			exist := logic.CheckSumExisted(sum)
 			if exist {
 				/*软链接path与sha256对应的文件*/
-				// SoftLink(path)
-				return stream.SendAndClose(&filetransfer.UploadFileResponse{Success: true})
+				fmt.Println("file already exists")
+				continue
 			}
-			err := logic.WriteData(file, data)
+			logic.FileHolder.AppendFile(path, sum)
+			_, err := logic.WriteData(sum, data) //add data to file
 			if err != nil {
+				log.Println("write data to file error:", err)
 				break
 			}
 		}
