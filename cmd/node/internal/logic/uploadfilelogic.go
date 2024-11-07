@@ -1,7 +1,7 @@
 package logic
 
 import (
-	"crypto/md5"
+	"crypto/sha256"
 	"fmt"
 	"os"
 )
@@ -18,7 +18,6 @@ func OpenOrCreateFile(path string) (*os.File, error) {
 }
 
 func WriteData(file *os.File, data []byte) error {
-	/*TODO:check the data md5 value*/
 	n, err := file.Write(data)
 	if err != nil {
 		return err
@@ -29,7 +28,12 @@ func WriteData(file *os.File, data []byte) error {
 	return nil
 }
 
-func generateMd5(data []byte) [16]byte {
-	md := md5.Sum(data)
-	return md
+func GenerateSHA256(data []byte) [32]byte {
+	sum := sha256.Sum256(data)
+	return sum
+}
+
+func CheckSumExisted(sum [32]byte) bool {
+	// check if the file with the same checksum exists
+	return false
 }

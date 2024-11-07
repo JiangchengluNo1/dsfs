@@ -64,17 +64,25 @@ func (n *Node) UploadFile(stream filetransfer.FileTransfer_UploadFileServer) err
 		if err != nil {
 			break
 		}
+		var path string
 		switch streamData.Payload.(type) {
 		case *filetransfer.UploadFileRequest_Fm:
 			fc := streamData.GetFm()
-			log.Println("accept file path: ", fc.Path)
-			file, err = logic.OpenOrCreateFile(fc.Path)
+			path = fc.Path
+			file, err = logic.OpenOrCreateFile(path)
 			if err != nil {
 				return err
 			}
 			defer file.Close()
 		case *filetransfer.UploadFileRequest_Data:
 			data := streamData.GetData()
+			sum := logic.GenerateSHA256(data)
+			exist := logic.CheckSumExisted(sum)
+			if exist {
+				/*软链接path与sha256对应的文件*/
+				// SoftLink(path)
+				return stream.SendAndClose(&filetransfer.UploadFileResponse{Success: true})
+			}
 			err := logic.WriteData(file, data)
 			if err != nil {
 				break
