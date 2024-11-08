@@ -71,7 +71,10 @@ func (f *fileHolder) loadFromFile() {
 	}
 	fmt.Println(f.m)
 }
-
+func (f *fileHolder) Close() {
+	f.flushBuffer()
+	f.file.Close()
+}
 func init() {
 	var err error
 	FileHolder.aofPath = "./config/aof"

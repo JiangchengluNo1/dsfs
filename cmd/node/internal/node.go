@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/mahaonan001/dsfs/cmd/node/internal/logic"
 	"github.com/mahaonan001/dsfs/cmd/node/internal/node"
 	filetransfer "github.com/mahaonan001/dsfs/proto"
 	"google.golang.org/grpc"
@@ -22,6 +23,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer logic.FileHolder.Close()
 }
 
 // 姐姐一个人写代码孤单么？ 💓O.o 💖
