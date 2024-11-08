@@ -57,7 +57,7 @@ func (n *Node) UploadFile(stream filetransfer.FileTransfer_UploadFileServer) err
 			fmt.Println(Path)
 			data := streamData.GetData()
 			sum := logic.GenerateSHA256(data)
-			exist := logic.CheckSumExisted(sum)
+			exist := logic.CheckSumExisted(Path, sum)
 			if exist {
 				/*软链接path与sha256对应的文件*/
 				fmt.Println("file already exists")

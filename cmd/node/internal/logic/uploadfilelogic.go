@@ -32,8 +32,15 @@ func GenerateSHA256(data []byte) [32]byte {
 	return sum
 }
 
-func CheckSumExisted(sum [32]byte) bool {
+func CheckSumExisted(path string, sum [32]byte) bool {
 	// check if the file with the same checksum exists
-	_, err := os.ReadFile(fileDir + "/" + fmt.Sprintf("%x", sum))
-	return err == nil
+	shas, ok := FileHolder.m[path]
+	if ok {
+		for _, sha := range shas {
+			if sha == sum {
+				return true
+			}
+		}
+	}
+	return false
 }

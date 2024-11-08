@@ -41,8 +41,12 @@ func (f *fileHolder) GetFile(path string) [][32]byte {
 
 func (f *fileHolder) DeleteFile(path string) {
 	f.Lock()
+	if _, ok := f.m[path]; !ok {
+		return
+	}
 	delete(f.m, path)
 	f.Unlock()
+	f.buffer = append(f.buffer, "DeleteFile,"+path+"\n")
 }
 
 func (f *fileHolder) flushBuffer() {
@@ -63,7 +67,10 @@ func (f *fileHolder) loadFromFile() {
 	for scanner.Scan() {
 		line := scanner.Text()
 		parts := strings.Split(line, ",")
-		if parts[0] == "AppendFile" {
+		switch parts[0] {
+		case "DeleteFile":
+			delete(f.m, parts[1])
+		case "AppendFile":
 			sha := [32]byte{}
 			copy(sha[:], parts[2])
 			f.m[parts[1]] = append(f.m[parts[1]], sha)
