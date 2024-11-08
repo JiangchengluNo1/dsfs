@@ -15,7 +15,7 @@ node:
 pro:
 	protoc --go_out=./proto --go-grpc_out=./proto ./proto/filetransfer.proto
 node_test:
-	go test -v ./node/internal
+	go test -v ./cmd/node/internal
 clean:
 	rm -rf ./bin/*
 	rm -rf ./proto/*.pb.go
