@@ -5,12 +5,9 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"os"
 
 	"github.com/mahaonan001/dsfs/cmd/node/internal/logic"
-	"github.com/mahaonan001/dsfs/cmd/node/tys"
 	filetransfer "github.com/mahaonan001/dsfs/proto"
-	"google.golang.org/grpc"
 )
 
 type (
@@ -26,33 +23,19 @@ type Node struct {
 	filetransfer.UnimplementedFileTransferServer
 }
 
+var Path string
+
 // *filetransfer.GetFileRequest, grpc.ServerStreamingServer[filetransfer.FileChunk]
-func (n *Node) GetFile(req *filetransfer.GetFileRequest, stream grpc.ServerStreamingServer[filetransfer.FileChunk]) error {
-	var (
-		err  error
-		file *os.File
-		ln   int
-	)
-	file, err = logic.GetFile(req.Path)
+func (n *Node) GetFile(req *filetransfer.GetFileRequest, stream filetransfer.FileTransfer_GetFileServer) error {
+
+	err := logic.GetFile(req.Path, &stream)
+	if err == io.EOF {
+		return nil
+	}
 	if err != nil {
 		return err
 	}
-	defer file.Close()
-	data := make([]byte, tys.MB*64)
-	for {
-		ln, err = file.Read(data)
-		if err == io.EOF {
-			return nil
-		}
-		if err != nil {
-			return err
-		}
-		err = stream.Send(&filetransfer.FileChunk{Data: data[:ln]})
-		if err != nil {
-			break
-		}
-	}
-	return err
+	return nil
 }
 
 func (n *Node) UploadFile(stream filetransfer.FileTransfer_UploadFileServer) error {
@@ -65,12 +48,13 @@ func (n *Node) UploadFile(stream filetransfer.FileTransfer_UploadFileServer) err
 		if err != nil {
 			break
 		}
-		var path string
 		switch streamData.Payload.(type) {
 		case *filetransfer.UploadFileRequest_Fm:
 			fc := streamData.GetFm()
-			path = fc.Path
+			Path = fc.Path
+			// fmt.Println(path)
 		case *filetransfer.UploadFileRequest_Data:
+			fmt.Println(Path)
 			data := streamData.GetData()
 			sum := logic.GenerateSHA256(data)
 			exist := logic.CheckSumExisted(sum)
@@ -79,7 +63,7 @@ func (n *Node) UploadFile(stream filetransfer.FileTransfer_UploadFileServer) err
 				fmt.Println("file already exists")
 				continue
 			}
-			logic.FileHolder.AppendFile(path, sum)
+			logic.FileHolder.AppendFile(Path, sum)
 			_, err := logic.WriteData(sum, data) //add data to file
 			if err != nil {
 				log.Println("write data to file error:", err)

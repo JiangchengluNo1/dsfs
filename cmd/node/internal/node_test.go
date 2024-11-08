@@ -47,7 +47,7 @@ func TestUpload(t *testing.T) {
 	}); err != nil {
 		log.Fatalf("could not send file meta: %v", err)
 	}
-	buf := make([]byte, 1024*1024*8)
+	buf := make([]byte, 1024*1024*64)
 	for {
 		n, err := file.Read(buf)
 		if err == io.EOF {
@@ -87,7 +87,7 @@ func TestGetFile(t *testing.T) {
 	}
 	defer conn.Close()
 	client := filetransfer.NewFileTransferClient(conn)
-	stream, err := client.GetFile(context.Background(), &filetransfer.GetFileRequest{Path: "aaa.ssb"})
+	stream, err := client.GetFile(context.Background(), &filetransfer.GetFileRequest{Path: "new.meta"})
 	if err != nil {
 		t.Log(err)
 		return
