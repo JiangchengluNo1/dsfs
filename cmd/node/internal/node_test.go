@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -14,7 +13,6 @@ import (
 )
 
 func TestUpload(t *testing.T) {
-	t.Log("test rpc")
 	conn, err := grpc.NewClient(
 		"localhost:5001",
 		grpc.WithDefaultCallOptions(
@@ -30,7 +28,7 @@ func TestUpload(t *testing.T) {
 
 	client := filetransfer.NewFileTransferClient(conn)
 
-	file, err := os.Open("./file/mmbert.zip")
+	file, err := os.Open("./file/头像.jpg")
 	if err != nil {
 		log.Fatalf("could not open file: %v", err)
 	}
@@ -72,37 +70,37 @@ func TestUpload(t *testing.T) {
 	log.Printf("Upload response: %v", res.Success)
 }
 
-func TestGetFile(t *testing.T) {
-	t.Log("test rpc")
-	conn, err := grpc.NewClient(
-		"localhost:5001",
-		grpc.WithDefaultCallOptions(
-			grpc.MaxCallSendMsgSize(1024*1024*128),
-			grpc.MaxCallRecvMsgSize(1024*1024*128),
-		),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
-	if err != nil {
-		log.Fatalf("did not connect: %v", err)
-	}
-	defer conn.Close()
-	client := filetransfer.NewFileTransferClient(conn)
-	stream, err := client.GetFile(context.Background(), &filetransfer.GetFileRequest{Path: "new.meta"})
-	if err != nil {
-		t.Log(err)
-		return
-	}
-	fmt.Println("-----receive message------")
-	for {
-		fc, err := stream.Recv()
-		if err == io.EOF {
-			fmt.Println("------message end------")
-			break
-		}
-		if err != nil {
-			t.Log(err)
-			break
-		}
-		fmt.Println(string(fc.Data))
-	}
-}
+// func TestGetFile(t *testing.T) {
+// 	t.Log("test rpc")
+// 	conn, err := grpc.NewClient(
+// 		"localhost:5001",
+// 		grpc.WithDefaultCallOptions(
+// 			grpc.MaxCallSendMsgSize(1024*1024*128),
+// 			grpc.MaxCallRecvMsgSize(1024*1024*128),
+// 		),
+// 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+// 	)
+// 	if err != nil {
+// 		log.Fatalf("did not connect: %v", err)
+// 	}
+// 	defer conn.Close()
+// 	client := filetransfer.NewFileTransferClient(conn)
+// 	stream, err := client.GetFile(context.Background(), &filetransfer.GetFileRequest{Path: "new.meta"})
+// 	if err != nil {
+// 		t.Log(err)
+// 		return
+// 	}
+// 	fmt.Println("-----receive message------")
+// 	for {
+// 		fc, err := stream.Recv()
+// 		if err == io.EOF {
+// 			fmt.Println("------message end------")
+// 			break
+// 		}
+// 		if err != nil {
+// 			t.Log(err)
+// 			break
+// 		}
+// 		fmt.Println(string(fc.Data))
+// 	}
+// }

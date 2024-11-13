@@ -52,17 +52,16 @@ func (n *Node) UploadFile(stream filetransfer.FileTransfer_UploadFileServer) err
 		case *filetransfer.UploadFileRequest_Fm:
 			fc := streamData.GetFm()
 			Path = fc.Path
-			// fmt.Println(path)
 		case *filetransfer.UploadFileRequest_Data:
-			fmt.Println(Path)
 			data := streamData.GetData()
 			sum := logic.GenerateSHA256(data)
 			exist := logic.CheckSumExisted(Path, sum)
 			if exist {
 				/*软链接path与sha256对应的文件*/
-				fmt.Println("file already exists")
 				continue
 			}
+			sha := fmt.Sprintf("%x", sum)
+			fmt.Printf("file %s not exists\n", sha)
 			logic.FileHolder.AppendFile(Path, sum)
 			_, err := logic.WriteData(sum, data) //add data to file
 			if err != nil {

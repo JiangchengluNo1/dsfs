@@ -19,11 +19,12 @@ func main() {
 	s := grpc.NewServer(grpc.MaxSendMsgSize(1024*1024*128), grpc.MaxRecvMsgSize(1024*1024*128))
 	filetransfer.RegisterFileTransferServer(s, &node.Node{})
 	fmt.Println("Node start at 5001")
+	go logic.FileHolder.KeepFlushBuffer()
+	defer logic.FileHolder.Close()
 	err = s.Serve(lis)
 	if err != nil {
 		panic(err)
 	}
-	defer logic.FileHolder.Close()
 }
 
 // 姐姐一个人写代码孤单么？ 💓O.o 💖

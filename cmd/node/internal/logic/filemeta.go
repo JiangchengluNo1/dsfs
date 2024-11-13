@@ -2,10 +2,12 @@ package logic
 
 import (
 	"bufio"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"strings"
 	"sync"
+	"time"
 )
 
 const maxLine = 8
@@ -14,23 +16,27 @@ type fileHolder struct {
 	m       map[string][][32]byte
 	file    *os.File
 	aofPath string
-	buffer  []string
+	buffer  chan string
 	sync.RWMutex
 }
 
 var FileHolder = fileHolder{
-	m: make(map[string][][32]byte),
+	m:      make(map[string][][32]byte),
+	buffer: make(chan string, maxLine),
 }
 
 func (f *fileHolder) AppendFile(path string, sha [32]byte) {
 	f.Lock()
-	f.m[path] = append(f.m[path], sha)
-	f.Unlock()
-	f.buffer = append(f.buffer, "AppendFile,"+path+","+string(sha[:])+"\n")
-	if len(f.buffer) == maxLine {
-		f.flushBuffer()
-		f.buffer = []string{}
+	_, ok := f.m[path]
+	if ok {
+		f.m[path] = append(f.m[path], sha)
+	} else {
+		f.m[path] = [][32]byte{sha}
 	}
+	f.Unlock()
+	apctx := fmt.Sprintf("AppendFile,%s,%x\n", path, sha)
+	fmt.Println(apctx + "append file")
+	f.buffer <- apctx
 }
 
 func (f *fileHolder) GetFile(path string) [][32]byte {
@@ -41,25 +47,19 @@ func (f *fileHolder) GetFile(path string) [][32]byte {
 
 func (f *fileHolder) DeleteFile(path string) {
 	f.Lock()
-	if _, ok := f.m[path]; !ok {
-		return
-	}
 	delete(f.m, path)
 	f.Unlock()
-	f.buffer = append(f.buffer, "DeleteFile,"+path+"\n")
 }
 
-func (f *fileHolder) flushBuffer() {
-	f.Lock()
-	defer f.Unlock()
-	for _, line := range f.buffer {
-		_, err := f.file.WriteString(line)
-		if err != nil {
-			fmt.Println("写入aof文件失败,err:", err)
-			return
+func (f *fileHolder) KeepFlushBuffer() {
+	for {
+		select {
+		case ctx := <-f.buffer:
+			f.file.WriteString(ctx)
+		default:
+			time.Sleep(5 * time.Second)
 		}
 	}
-	f.buffer = []string{}
 }
 
 func (f *fileHolder) loadFromFile() {
@@ -67,30 +67,31 @@ func (f *fileHolder) loadFromFile() {
 	for scanner.Scan() {
 		line := scanner.Text()
 		parts := strings.Split(line, ",")
-		switch parts[0] {
-		case "DeleteFile":
-			delete(f.m, parts[1])
-		case "AppendFile":
+		if parts[0] == "AppendFile" {
 			sha := [32]byte{}
-			copy(sha[:], parts[2])
+			shaBytes, err := hex.DecodeString(parts[2])
+			if err != nil {
+				fmt.Printf("错误的sha格式: %s\n", parts[2])
+				continue
+			}
+			if len(shaBytes) != 32 {
+				fmt.Printf("sha长度不正确: %s\n", parts[2])
+				continue
+			}
+			copy(sha[:], shaBytes)
 			f.m[parts[1]] = append(f.m[parts[1]], sha)
 		}
 	}
-	fmt.Println(f.m)
 }
 func (f *fileHolder) Close() {
-	f.flushBuffer()
 	f.file.Close()
 }
 func init() {
 	var err error
 	FileHolder.aofPath = "./config/aof"
-	FileHolder.buffer = []string{}
 	FileHolder.file, err = os.OpenFile(FileHolder.aofPath+"/fileHolder.hn", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
-	// defer FileHolder.file.Close()
 	if err != nil {
 		panic(err)
 	}
 	FileHolder.loadFromFile()
-
 }
