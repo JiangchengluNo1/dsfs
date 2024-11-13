@@ -2,3 +2,4 @@ go.mod
 go.sum
 bin/
 cmd/node/internal/file
+*/.DS_Store

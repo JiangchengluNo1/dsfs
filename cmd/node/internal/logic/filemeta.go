@@ -94,4 +94,5 @@ func init() {
 		panic(err)
 	}
 	FileHolder.loadFromFile()
+	fmt.Println(FileHolder.m)
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -70,37 +71,38 @@ func TestUpload(t *testing.T) {
 	log.Printf("Upload response: %v", res.Success)
 }
 
-// func TestGetFile(t *testing.T) {
-// 	t.Log("test rpc")
-// 	conn, err := grpc.NewClient(
-// 		"localhost:5001",
-// 		grpc.WithDefaultCallOptions(
-// 			grpc.MaxCallSendMsgSize(1024*1024*128),
-// 			grpc.MaxCallRecvMsgSize(1024*1024*128),
-// 		),
-// 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-// 	)
-// 	if err != nil {
-// 		log.Fatalf("did not connect: %v", err)
-// 	}
-// 	defer conn.Close()
-// 	client := filetransfer.NewFileTransferClient(conn)
-// 	stream, err := client.GetFile(context.Background(), &filetransfer.GetFileRequest{Path: "new.meta"})
-// 	if err != nil {
-// 		t.Log(err)
-// 		return
-// 	}
-// 	fmt.Println("-----receive message------")
-// 	for {
-// 		fc, err := stream.Recv()
-// 		if err == io.EOF {
-// 			fmt.Println("------message end------")
-// 			break
-// 		}
-// 		if err != nil {
-// 			t.Log(err)
-// 			break
-// 		}
-// 		fmt.Println(string(fc.Data))
-// 	}
-// }
+func TestGetFile(t *testing.T) {
+	t.Log("test rpc")
+	conn, err := grpc.NewClient(
+		"localhost:5001",
+		grpc.WithDefaultCallOptions(
+			grpc.MaxCallSendMsgSize(1024*1024*128),
+			grpc.MaxCallRecvMsgSize(1024*1024*128),
+		),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+	client := filetransfer.NewFileTransferClient(conn)
+	stream, err := client.GetFile(context.Background(), &filetransfer.GetFileRequest{Path: "new.meta"})
+	if err != nil {
+		t.Log(err)
+		return
+	}
+	fmt.Println("-----receive message------")
+	for {
+		fc, err := stream.Recv()
+		if err == io.EOF {
+			fmt.Println("------message end------")
+			break
+		}
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+		// do the thing you want
+		fmt.Println(string(fc.Data))
+	}
+}
