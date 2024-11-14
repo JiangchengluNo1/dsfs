@@ -35,7 +35,6 @@ func (f *fileHolder) AppendFile(path string, sha [32]byte) {
 	}
 	f.Unlock()
 	apctx := fmt.Sprintf("AppendFile,%s,%x\n", path, sha)
-	fmt.Println(apctx + "append file")
 	f.buffer <- apctx
 }
 

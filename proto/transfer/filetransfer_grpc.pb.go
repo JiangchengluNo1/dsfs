@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	FileTransfer_GetFile_FullMethodName    = "/filetransfer.FileTransfer/GetFile"
+	FileTransfer_CheckSha_FullMethodName   = "/filetransfer.FileTransfer/CheckSha"
 	FileTransfer_UploadFile_FullMethodName = "/filetransfer.FileTransfer/UploadFile"
 	FileTransfer_DeleteFile_FullMethodName = "/filetransfer.FileTransfer/DeleteFile"
 )
@@ -29,6 +30,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FileTransferClient interface {
 	GetFile(ctx context.Context, in *GetFileRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FileChunk], error)
+	CheckSha(ctx context.Context, in *Sha, opts ...grpc.CallOption) (*ShaResponse, error)
 	UploadFile(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[UploadFileRequest, UploadFileResponse], error)
 	DeleteFile(ctx context.Context, in *DeleteFileRequest, opts ...grpc.CallOption) (*DeleteFileResponse, error)
 }
@@ -60,6 +62,16 @@ func (c *fileTransferClient) GetFile(ctx context.Context, in *GetFileRequest, op
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type FileTransfer_GetFileClient = grpc.ServerStreamingClient[FileChunk]
 
+func (c *fileTransferClient) CheckSha(ctx context.Context, in *Sha, opts ...grpc.CallOption) (*ShaResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ShaResponse)
+	err := c.cc.Invoke(ctx, FileTransfer_CheckSha_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *fileTransferClient) UploadFile(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[UploadFileRequest, UploadFileResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &FileTransfer_ServiceDesc.Streams[1], FileTransfer_UploadFile_FullMethodName, cOpts...)
@@ -88,6 +100,7 @@ func (c *fileTransferClient) DeleteFile(ctx context.Context, in *DeleteFileReque
 // for forward compatibility.
 type FileTransferServer interface {
 	GetFile(*GetFileRequest, grpc.ServerStreamingServer[FileChunk]) error
+	CheckSha(context.Context, *Sha) (*ShaResponse, error)
 	UploadFile(grpc.ClientStreamingServer[UploadFileRequest, UploadFileResponse]) error
 	DeleteFile(context.Context, *DeleteFileRequest) (*DeleteFileResponse, error)
 	mustEmbedUnimplementedFileTransferServer()
@@ -102,6 +115,9 @@ type UnimplementedFileTransferServer struct{}
 
 func (UnimplementedFileTransferServer) GetFile(*GetFileRequest, grpc.ServerStreamingServer[FileChunk]) error {
 	return status.Errorf(codes.Unimplemented, "method GetFile not implemented")
+}
+func (UnimplementedFileTransferServer) CheckSha(context.Context, *Sha) (*ShaResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckSha not implemented")
 }
 func (UnimplementedFileTransferServer) UploadFile(grpc.ClientStreamingServer[UploadFileRequest, UploadFileResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method UploadFile not implemented")
@@ -141,6 +157,24 @@ func _FileTransfer_GetFile_Handler(srv interface{}, stream grpc.ServerStream) er
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type FileTransfer_GetFileServer = grpc.ServerStreamingServer[FileChunk]
 
+func _FileTransfer_CheckSha_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Sha)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FileTransferServer).CheckSha(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FileTransfer_CheckSha_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FileTransferServer).CheckSha(ctx, req.(*Sha))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _FileTransfer_UploadFile_Handler(srv interface{}, stream grpc.ServerStream) error {
 	return srv.(FileTransferServer).UploadFile(&grpc.GenericServerStream[UploadFileRequest, UploadFileResponse]{ServerStream: stream})
 }
@@ -173,6 +207,10 @@ var FileTransfer_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "filetransfer.FileTransfer",
 	HandlerType: (*FileTransferServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CheckSha",
+			Handler:    _FileTransfer_CheckSha_Handler,
+		},
 		{
 			MethodName: "DeleteFile",
 			Handler:    _FileTransfer_DeleteFile_Handler,

@@ -6,7 +6,7 @@ import (
 
 	"github.com/mahaonan001/dsfs/cmd/node/internal/logic"
 	"github.com/mahaonan001/dsfs/cmd/node/internal/node"
-	filetransfer "github.com/mahaonan001/dsfs/proto"
+	filetransfer "github.com/mahaonan001/dsfs/proto/transfer"
 	"google.golang.org/grpc"
 )
 
@@ -28,4 +28,5 @@ func main() {
 }
 
 // 姐姐一个人写代码孤单么？ 💓O.o 💖
+
 // 姐姐加一下我的绿泡泡吧！ 💚🧊💚

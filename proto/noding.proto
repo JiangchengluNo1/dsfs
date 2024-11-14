@@ -1,0 +1,24 @@
+syntax = "proto3";
+package noding;
+option go_package = "./;noding";
+
+service Noding {
+    rpc Heart(Hearting) returns (HeartingResponse) {}
+    rpc Wake(WakeUp) returns (WakeUpResponse) {}
+}
+
+message Hearting {
+    int32 beatNumber = 1;
+}
+
+message HeartingResponse {
+    bool success = 1;
+}
+
+message WakeUp {
+    repeated string files = 1;
+}
+
+message WakeUpResponse {
+    bool success = 1;
+}

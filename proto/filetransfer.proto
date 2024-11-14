@@ -6,6 +6,7 @@ package filetransfer;
 
 service FileTransfer {
   rpc GetFile(GetFileRequest) returns (stream FileChunk) {}
+  rpc CheckSha(Sha) returns (ShaResponse) {}
   rpc UploadFile(stream UploadFileRequest) returns (UploadFileResponse) {}
   rpc DeleteFile(DeleteFileRequest) returns (DeleteFileResponse) {}
 }
@@ -17,6 +18,14 @@ message GetFileRequest {
 // const filechunksize = 64mb
 message FileChunk {
   bytes data = 1;
+}
+
+message Sha {
+  bytes sha = 1;
+}
+
+message ShaResponse {
+  bool exists = 1;
 }
 
 message FileMeta{

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	filetransfer "github.com/mahaonan001/dsfs/proto"
+	filetransfer "github.com/mahaonan001/dsfs/proto/transfer"
 )
 
 // GetFile reads a file from the filesystem, returning the contents as a byte slice.
