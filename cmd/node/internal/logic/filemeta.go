@@ -25,6 +25,17 @@ var FileHolder = fileHolder{
 	buffer: make(chan string, maxLine),
 }
 
+func (f *fileHolder) Getlen() int {
+	f.RLock()
+	defer f.RUnlock()
+	return len(f.m)
+}
+
+func (f *fileHolder) GetMap() map[string][][32]byte {
+	f.RLock()
+	defer f.RUnlock()
+	return f.m
+}
 func (f *fileHolder) AppendFile(path string, sha [32]byte) {
 	f.Lock()
 	_, ok := f.m[path]
@@ -85,7 +96,7 @@ func (f *fileHolder) loadFromFile() {
 func (f *fileHolder) Close() {
 	f.file.Close()
 }
-func init() {
+func Init() {
 	var err error
 	FileHolder.aofPath = "./config/aof"
 	FileHolder.file, err = os.OpenFile(FileHolder.aofPath+"/fileHolder.hn", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
@@ -93,5 +104,4 @@ func init() {
 		panic(err)
 	}
 	FileHolder.loadFromFile()
-	fmt.Println(FileHolder.m)
 }

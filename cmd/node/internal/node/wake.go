@@ -2,6 +2,9 @@ package node
 
 import (
 	"context"
+	"fmt"
+	"log"
+	"time"
 
 	noding "github.com/mahaonan001/dsfs/proto/healthing"
 	"google.golang.org/grpc"
@@ -20,15 +23,28 @@ var (
 )
 
 func WakeUp(files []string) {
-	client, err = grpc.NewClient("localhost:8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	client, err = grpc.NewClient("localhost:56789", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		panic(err)
 	}
 	c = noding.NewNodingClient(client)
 	ctx = context.Background()
-	c.Wake(ctx, &noding.WakeUp{Files: files})
+	res, err := c.Wake(ctx, &noding.WakeUp{Files: files})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(res.Success)
 }
 
 func Healthing(number int) {
-	c.Heart(ctx, &noding.Hearting{BeatNumber: int32(number)})
+	defer client.Close()
+	for {
+		res, err := c.Heart(ctx, &noding.Hearting{BeatNumber: int32(number)})
+		if err != nil {
+			log.Printf("Heart error: %v\n", err)
+			break
+		}
+		fmt.Println(res.Success)
+		time.Sleep(5 * time.Second)
+	}
 }

@@ -28,5 +28,14 @@ func main() {
 }
 
 // 姐姐一个人写代码孤单么？ 💓O.o 💖
+func init() {
+	logic.Init()
+	files := make([]string, 0, logic.FileHolder.Getlen())
+	for k := range logic.FileHolder.GetMap() {
+		files = append(files, k)
+	}
+	node.WakeUp(files)
+	go node.Healthing(1)
+}
 
 // 姐姐加一下我的绿泡泡吧！ 💚🧊💚
