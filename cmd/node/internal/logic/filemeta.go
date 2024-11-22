@@ -98,7 +98,7 @@ func (f *fileHolder) Close() {
 }
 func Init() {
 	var err error
-	FileHolder.aofPath = "./config/aof"
+	FileHolder.aofPath = "./cmd/node/internal/config/aof"
 	FileHolder.file, err = os.OpenFile(FileHolder.aofPath+"/fileHolder.hn", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
 	if err != nil {
 		panic(err)

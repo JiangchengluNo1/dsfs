@@ -10,7 +10,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-// 姐姐网恋吗？ ❤️‍🔥o.O💞
 func main() {
 	lis, err := net.Listen("tcp", ":5001")
 	if err != nil {
@@ -27,7 +26,6 @@ func main() {
 	}
 }
 
-// 姐姐一个人写代码孤单么？ 💓O.o 💖
 func init() {
 	logic.Init()
 	files := make([]string, 0, logic.FileHolder.Getlen())
@@ -37,5 +35,3 @@ func init() {
 	node.WakeUp(files)
 	go node.Healthing(1)
 }
-
-// 姐姐加一下我的绿泡泡吧！ 💚🧊💚

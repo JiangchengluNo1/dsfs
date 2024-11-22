@@ -1,14 +1,15 @@
 init:
+	rm -r go.mod go.sum
 	go mod init github.com/mahaonan001/dsfs
 	go mod tidy
 master_build:
-	go build -o ./bin/master ./cmd/master/master.go
+	go build -o ./bin/master ./cmd/master/internal/master.go
 node_build:
-	go build -o ./bin/node ./cmd/node/node.go
-build: pro node_build 
+	go build -o ./bin/node ./cmd/node/internal/node.go
+build: node_build  master_build	
 
-# master:
-# 	./bin/master
+master:
+	./bin/master
 node:
 	./bin/node test_node_1
 

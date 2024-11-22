@@ -18,15 +18,19 @@ type MasterServer struct {
 
 // //////////////////////////////////////
 var file2number map[string][]int32
+var Master2CF MasterServer
 
 // //////////////////////////////////////
-func (m *MasterServer) HealthCheck(ctx context.Context, in *noding.Hearting) (*noding.HeartingResponse, error) {
+func (m *MasterServer) Heart(ctx context.Context, in *noding.Hearting) (*noding.HeartingResponse, error) {
 	beatnumber := in.GetBeatNumber()
+	if !m.CheckNodeOnline(beatnumber) {
+		fmt.Println("Node", beatnumber, "is online")
+	}
 	m.NodeClient[beatnumber] = time.Now()
 	return &noding.HeartingResponse{Success: m.CheckNodeOnline(beatnumber)}, nil
 }
 
-func (m *MasterServer) WakeUp(ctx context.Context, in *noding.WakeUp) (*noding.WakeUpResponse, error) {
+func (m *MasterServer) Wake(ctx context.Context, in *noding.WakeUp) (*noding.WakeUpResponse, error) {
 	files := in.GetFiles()
 	number := in.GetNumber()
 	for _, v := range files {
@@ -41,14 +45,27 @@ func (m *MasterServer) CheckNodeOnline(beatnumber int32) bool {
 	return ok
 }
 
-func (m *MasterServer) ClientOffSound() {
-	m.RLock()
-	defer m.RUnlock()
-	for k := range m.NodeClient {
-		if time.Since(m.NodeClient[k]) > time.Second*10 {
-			red := "\033[31m"
-			reset := "\033[0m"
-			fmt.Printf("%sNode %v is out of line\n%s", red, k, reset)
+func ClientOffSound() {
+
+	for {
+		for k := range Master2CF.NodeClient {
+			Master2CF.Lock()
+			if time.Since(Master2CF.NodeClient[k]) > time.Second*10 {
+				red := "\033[31m"
+				reset := "\033[0m"
+				fmt.Printf("%sNode %v is out of line\n%s", red, k, reset)
+				delete(Master2CF.NodeClient, k)
+			}
+			Master2CF.Unlock()
 		}
+		time.Sleep(time.Second * 5)
 	}
+}
+
+func init() {
+	Master2CF = MasterServer{
+		NodeClient: make(map[int32]time.Time),
+		FileOnNode: make(map[string]int32),
+	}
+	file2number = make(map[string][]int32)
 }
