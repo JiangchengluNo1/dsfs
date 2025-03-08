@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	fileDir = "./file"
+	fileDir = "../cmd/node/internal/file"
 )
 
 func WriteData(sha [32]byte, data []byte) ([32]byte, error) {

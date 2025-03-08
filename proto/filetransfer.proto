@@ -9,6 +9,7 @@ service FileTransfer {
   rpc CheckSha(Sha) returns (ShaResponse) {}
   rpc UploadFile(stream UploadFileRequest) returns (UploadFileResponse) {}
   rpc DeleteFile(DeleteFileRequest) returns (DeleteFileResponse) {}
+  // rpc UpdateFile(UpdateFileRequest) returns (UpdateFileResponse) {}
 }
 
 
@@ -52,3 +53,4 @@ message DeleteFileRequest {
 message DeleteFileResponse {
   bool success = 1;
 }
+

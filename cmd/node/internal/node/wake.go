@@ -36,10 +36,10 @@ func WakeUp(files []string) {
 	fmt.Println(res.Success)
 }
 
-func Healthing(number int) {
+func Healthing(ip string) {
 	defer client.Close()
 	for {
-		res, err := c.Heart(ctx, &noding.Hearting{BeatNumber: int32(number)})
+		res, err := c.Heart(ctx, &noding.Hearting{Ip: ip})
 		if err != nil {
 			log.Printf("Heart error: %v\n", err)
 			break

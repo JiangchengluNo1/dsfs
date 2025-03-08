@@ -8,7 +8,7 @@ service Noding {
 }
 
 message Hearting {
-    int32 beatNumber = 1;
+    string ip = 1;
 }
 
 message HeartingResponse {

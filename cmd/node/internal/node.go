@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/mahaonan001/dsfs/cmd/node/internal/ip"
 	"github.com/mahaonan001/dsfs/cmd/node/internal/logic"
 	"github.com/mahaonan001/dsfs/cmd/node/internal/node"
 	filetransfer "github.com/mahaonan001/dsfs/proto/transfer"
@@ -33,5 +34,9 @@ func init() {
 		files = append(files, k)
 	}
 	node.WakeUp(files)
-	go node.Healthing(1)
+	ip, err := ip.GetIPV4()
+	if err != nil {
+		panic(err)
+	}
+	go node.Healthing(ip)
 }

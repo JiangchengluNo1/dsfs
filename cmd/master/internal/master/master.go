@@ -11,8 +11,8 @@ import (
 
 type MasterServer struct {
 	noding.UnimplementedNodingServer
-	NodeClient map[int32]time.Time // client onilne or not
-	FileOnNode map[string]int32    // file to client
+	NodeClient map[string]time.Time // client onilne or not
+	FileOnNode map[string]int32     // file to client
 	sync.RWMutex
 }
 
@@ -22,12 +22,12 @@ var Master2CF MasterServer
 
 // //////////////////////////////////////
 func (m *MasterServer) Heart(ctx context.Context, in *noding.Hearting) (*noding.HeartingResponse, error) {
-	beatnumber := in.GetBeatNumber()
-	if !m.CheckNodeOnline(beatnumber) {
-		fmt.Println("Node", beatnumber, "is online")
+	ip := in.GetIp()
+	if !m.CheckNodeOnline(ip) {
+		fmt.Println("Node", ip, "is online")
 	}
-	m.NodeClient[beatnumber] = time.Now()
-	return &noding.HeartingResponse{Success: m.CheckNodeOnline(beatnumber)}, nil
+	m.NodeClient[ip] = time.Now()
+	return &noding.HeartingResponse{Success: m.CheckNodeOnline(ip)}, nil
 }
 
 func (m *MasterServer) Wake(ctx context.Context, in *noding.WakeUp) (*noding.WakeUpResponse, error) {
@@ -38,10 +38,10 @@ func (m *MasterServer) Wake(ctx context.Context, in *noding.WakeUp) (*noding.Wak
 	}
 	return &noding.WakeUpResponse{Success: true}, nil
 }
-func (m *MasterServer) CheckNodeOnline(beatnumber int32) bool {
+func (m *MasterServer) CheckNodeOnline(ip string) bool {
 	m.RLock()
 	defer m.RUnlock()
-	_, ok := m.NodeClient[beatnumber]
+	_, ok := m.NodeClient[ip]
 	return ok
 }
 
@@ -64,7 +64,7 @@ func ClientOffSound() {
 
 func init() {
 	Master2CF = MasterServer{
-		NodeClient: make(map[int32]time.Time),
+		NodeClient: make(map[string]time.Time),
 		FileOnNode: make(map[string]int32),
 	}
 	file2number = make(map[string][]int32)
